@@ -85,3 +85,9 @@ Set the maximum size of internal error chanel. (default:0)
 ```go
 func ErrorChanelSize(size int) Option
 ```
+
+## Acknowledgments
+[golang.org/x/sync/errgroup](https://github.com/golang/sync/tree/master/errgroup) really inspired me. I appreciate it.
+
+## Bugs and Feedback
+For bugs, questions and discussions please use the Github Issues.
