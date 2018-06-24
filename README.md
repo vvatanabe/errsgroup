@@ -1,4 +1,4 @@
-# errsgroup
+# errsgroup [![Build Status](https://travis-ci.org/vvatanabe/errsgroup.svg?branch=master)](https://travis-ci.org/vvatanabe/errsgroup) [![Coverage Status](https://coveralls.io/repos/github/vvatanabe/errsgroup/badge.svg?branch=master)](https://coveralls.io/github/vvatanabe/errsgroup?branch=master)
 support multiple error handling synchronously with goroutine
 
 ## Installation
