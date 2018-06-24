@@ -8,13 +8,13 @@ import (
 type Option func(*Conf)
 
 type Conf struct {
-	limitSize   int
-	errChanSize int
+	maxParallelSize int
+	errChanSize     int
 }
 
-func LimitSize(size int) Option {
+func MaxParallelSize(size int) Option {
 	return func(c *Conf) {
-		c.limitSize = size
+		c.maxParallelSize = size
 	}
 }
 
@@ -26,14 +26,14 @@ func ErrorChanelSize(size int) Option {
 
 func NewGroup(opts ...Option) *Group {
 	conf := &Conf{
-		limitSize:   1,
-		errChanSize: 0,
+		maxParallelSize: 1,
+		errChanSize:     0,
 	}
 	for _, opt := range opts {
 		opt(conf)
 	}
 	return &Group{
-		limit:   make(chan struct{}, conf.limitSize),
+		limit:   make(chan struct{}, conf.maxParallelSize),
 		errChan: make(chan error, conf.errChanSize),
 		wg:      sync.WaitGroup{},
 	}
