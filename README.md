@@ -79,11 +79,7 @@ func main() {
 ### Functional Options
 Set the maximum size of parallels. (default:1)
 ```go
-func MaxParallelSize(size int) Option
-```
-Set the maximum size of internal error chanel. (default:0)
-```go
-func ErrorChanelSize(size int) Option
+func LimitSize(size int) Option
 ```
 
 ## Acknowledgments

@@ -15,7 +15,7 @@ func Test_Group(t *testing.T) {
 		{errs: []error{errors.New("err-1"), errors.New("err-2"), errors.New("err-3")}},
 	}
 	for _, tc := range cases {
-		g := NewGroup(MaxParallelSize(10), ErrorChanelSize(10))
+		g := NewGroup(LimitSize(10))
 		for _, err := range tc.errs {
 			err := err
 			g.Go(func() error {
@@ -29,7 +29,7 @@ func Test_Group(t *testing.T) {
 }
 
 func Test_WithContext(t *testing.T) {
-	g, ctx := WithContext(context.Background(), MaxParallelSize(10), ErrorChanelSize(10))
+	g, ctx := WithContext(context.Background(), LimitSize(10))
 	for _, err := range []error{errors.New("err-1"), errors.New("err-2"), errors.New("err-3")} {
 		err := err
 		g.Go(func() error {

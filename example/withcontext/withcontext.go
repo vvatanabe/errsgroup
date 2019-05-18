@@ -32,7 +32,7 @@ func main() {
 			return err
 		})
 	}
-	cancel()
+	go cancel()
 	if errs := g.Wait(); len(errs) > 0 {
 		for _, err := range errs {
 			fmt.Println(err.Error())

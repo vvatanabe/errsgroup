@@ -8,35 +8,27 @@ import (
 type Option func(*Conf)
 
 type Conf struct {
-	maxParallelSize int
-	errChanSize     int
+	limitSize int
 }
 
-func MaxParallelSize(size int) Option {
+func LimitSize(size int) Option {
 	return func(c *Conf) {
-		c.maxParallelSize = size
+		c.limitSize = size
 	}
 }
 
-func ErrorChanelSize(size int) Option {
-	return func(c *Conf) {
-		c.errChanSize = size
-	}
-}
+const errChanSize = 1
 
 func NewGroup(opts ...Option) *Group {
-	conf := &Conf{
-		maxParallelSize: 1,
-		errChanSize:     0,
-	}
+	conf := &Conf{1}
 	for _, opt := range opts {
 		opt(conf)
 	}
 	return &Group{
-		limit:   make(chan struct{}, conf.maxParallelSize),
-		errChan: make(chan error, conf.errChanSize),
-		wg:      sync.WaitGroup{},
+		limitChan: make(chan struct{}, conf.limitSize),
+		errChan:   make(chan error, errChanSize),
 	}
+
 }
 
 func WithContext(ctx context.Context, opts ...Option) (*Group, context.Context) {
@@ -46,35 +38,30 @@ func WithContext(ctx context.Context, opts ...Option) (*Group, context.Context) 
 }
 
 type Group struct {
-	limit   chan struct{}
-	errChan chan error
-	wg      sync.WaitGroup
-	cancel  func()
+	limitChan  chan struct{}
+	errChan    chan error
+	wg         sync.WaitGroup
+	cancelOnce sync.Once
+	cancel     func()
 }
 
 func (g *Group) Go(f func() error) {
 	g.wg.Add(1)
 	go func() {
-		g.limit <- struct{}{}
-		defer func() {
-			<-g.limit
-			g.wg.Done()
-		}()
+		g.limitChan <- struct{}{}
 		if err := f(); err != nil {
 			g.errChan <- err
-			if g.cancel != nil {
-				g.cancel()
-			}
+			g.cancelOnceIfExist()
 		}
+		<-g.limitChan
+		g.wg.Done()
 	}()
 }
 
 func (g *Group) Wait() []error {
 	go func() {
 		g.wg.Wait()
-		if g.cancel != nil {
-			g.cancel()
-		}
+		g.cancelOnceIfExist()
 		close(g.errChan)
 	}()
 	var errs []error
@@ -82,4 +69,12 @@ func (g *Group) Wait() []error {
 		errs = append(errs, r)
 	}
 	return errs
+}
+
+func (g *Group) cancelOnceIfExist() {
+	if g.cancel != nil {
+		g.cancelOnce.Do(func() {
+			g.cancel()
+		})
+	}
 }
